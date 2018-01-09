@@ -64,7 +64,8 @@ namespace ClangPowerTools
     TidyCommand mTidyCmd = null;
     StopClang mStopClang = null;
     SettingsCommand mSettingsCmd = null;
-
+	ClangFormatCommand clangFormatCmd = null;
+	
     #endregion
 
     #endregion
@@ -125,6 +126,8 @@ namespace ClangPowerTools
 
     #region IVsShellPropertyEvents Implementation
 
+      
+	
     public int OnShellPropertyChange(int propid, object propValue)
     {
       //Check if the toolbar was already activated
@@ -226,9 +229,13 @@ namespace ClangPowerTools
 
       if (null == mCompileCmd)
         mCompileCmd = new CompileCommand(this, CommandSet, CommandIds.kCompileId);
-
+	
+	  if(null == clangFormatCmd)
+		clangFormatCmd = new ClangFormatCommand(this, CommandSet, CommandIds.kClangFormat);
+	  
       if (null == mStopClang)
         mStopClang = new StopClang(this, CommandSet, CommandIds.kStopClang);
+<<<<<<< HEAD
 
       var generalOptions = (GeneralOptions)this.GetDialogPage(typeof(GeneralOptions));
       var currentVersion = GetPackageVersion();
@@ -245,6 +252,9 @@ namespace ClangPowerTools
         generalOptions.SaveSettingsToStorage();
       }
 
+=======
+	
+>>>>>>> integrate clang format command class in commands hierarchy
       return VSConstants.S_OK;
     }
 
