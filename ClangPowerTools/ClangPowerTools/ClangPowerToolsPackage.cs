@@ -235,7 +235,6 @@ namespace ClangPowerTools
 	  
       if (null == mStopClang)
         mStopClang = new StopClang(this, CommandSet, CommandIds.kStopClang);
-<<<<<<< HEAD
 
       var generalOptions = (GeneralOptions)this.GetDialogPage(typeof(GeneralOptions));
       var currentVersion = GetPackageVersion();
@@ -252,9 +251,6 @@ namespace ClangPowerTools
         generalOptions.SaveSettingsToStorage();
       }
 
-=======
-	
->>>>>>> integrate clang format command class in commands hierarchy
       return VSConstants.S_OK;
     }
 

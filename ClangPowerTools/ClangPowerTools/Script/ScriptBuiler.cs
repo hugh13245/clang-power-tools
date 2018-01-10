@@ -19,7 +19,6 @@ namespace ClangPowerTools
       return $"{assemblyPath}\\{ScriptConstants.kScriptName}";
     }
 
-<<<<<<< HEAD
     private string GetGeneralParameters(GeneralOptions aGeneralOptions)
     {
       string parameters = string.Empty;
@@ -101,8 +100,6 @@ namespace ClangPowerTools
       return parameters;
     }
 
-=======
->>>>>>> created special script builder classes for compile/tidy and format clang commands
     #endregion
 
   }
