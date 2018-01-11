@@ -53,21 +53,21 @@ namespace ClangPowerTools
     /// </summary>
     public const string PackageGuidString = "f564f9d3-01ae-493e-883b-18deebdb975e";
     public static readonly Guid CommandSet = new Guid("498fdff5-5217-4da9-88d2-edad44ba3874");
-    
-	private uint mEventSinkCookie;
-	private RunningDocTableEvents mRunningDocTableEvents;
-    
-	private uint mHSolutionEvents = uint.MaxValue;
+
+    private uint mEventSinkCookie;
+    //private RunningDocTableEvents mRunningDocTableEvents;
+
+    private uint mHSolutionEvents = uint.MaxValue;
     private IVsSolution mSolution;
 
     #region Commands
 
-    CompileCommand mCompileCmd = null;
-    TidyCommand mTidyCmd = null;
-    StopClang mStopClang = null;
-    SettingsCommand mSettingsCmd = null;
-	ClangFormatCommand clangFormatCmd = null;
-	
+    private CompileCommand mCompileCmd = null;
+    private TidyCommand mTidyCmd = null;
+    private StopClang mStopClang = null;
+    private SettingsCommand mSettingsCmd = null;
+    private ClangFormatCommand clangFormatCmd = null;
+
     #endregion
 
     #endregion
@@ -99,6 +99,12 @@ namespace ClangPowerTools
 
       SubscribeToOnShellPropertyChange();
 
+<<<<<<< HEAD
+=======
+      //mRunningDocTableEvents = new RunningDocTableEvents(this);
+      //mRunningDocTableEvents.BeforeSave += OnBeforeSave;
+
+>>>>>>> specified acces level for commands and commented unimplemented fuctionality
       //Settings command is always visible
       mSettingsCmd = new SettingsCommand(this, CommandSet, CommandIds.kSettingsId);
 
@@ -226,15 +232,15 @@ namespace ClangPowerTools
     {
       //Load the rest of the commands when a solution is loaded
 
-      if( null == mTidyCmd )
+      if (null == mTidyCmd)
         mTidyCmd = new TidyCommand(this, CommandSet, CommandIds.kTidyId);
 
       if (null == mCompileCmd)
         mCompileCmd = new CompileCommand(this, CommandSet, CommandIds.kCompileId);
-	
-	  if(null == clangFormatCmd)
-		clangFormatCmd = new ClangFormatCommand(this, CommandSet, CommandIds.kClangFormat);
-	  
+
+      if (null == clangFormatCmd)
+        clangFormatCmd = new ClangFormatCommand(this, CommandSet, CommandIds.kClangFormat);
+
       if (null == mStopClang)
         mStopClang = new StopClang(this, CommandSet, CommandIds.kStopClang);
 
