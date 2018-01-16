@@ -19,7 +19,8 @@ namespace ClangPowerTools
     private ErrorsManager mErrorsManager;
     private GeneralOptions mGeneralOptions;
     private PowerShellWrapper mPowerShell = new PowerShellWrapper();
-    private ClangCompileTidyScript mScriptBuilder;
+    private ClangCompileTidyScript mCompileTidyScriptBuilder;
+    private ClangFormatScript mClangFormatScriptBuilder;
     private const string kVs15Version = "2017";
     private Dictionary<string, string> mVsVersions = new Dictionary<string, string>
     {
@@ -59,10 +60,22 @@ namespace ClangPowerTools
 
     #region Protected methods
 
+    protected void RunScript(ClangFormatPage aClangFormatPage)
+    {
+      mClangFormatScriptBuilder = new ClangFormatScript();
+      mClangFormatScriptBuilder.ConstructParameters(aClangFormatPage);
+
+      foreach (var item in mItemsCollector.GetItems)
+      {
+        var script = mClangFormatScriptBuilder.GetScript(item.GetPath());
+        mPowerShell.Invoke(script);
+      }
+    }
+
     protected void RunScript(string aCommandName, TidyOptions mTidyOptions = null, TidyChecks mTidyChecks = null, TidyCustomChecks mTidyCustomChecks = null)
     {
-      mScriptBuilder = new ClangCompileTidyScript();
-      mScriptBuilder.ConstructParameters(mGeneralOptions, mTidyOptions, mTidyChecks,
+      mCompileTidyScriptBuilder = new ClangCompileTidyScript();
+      mCompileTidyScriptBuilder.ConstructParameters(mGeneralOptions, mTidyOptions, mTidyChecks,
         mTidyCustomChecks, DTEObj, VsEdition, VsVersion);
 
       string solutionPath = DTEObj.Solution.FullName;
@@ -73,7 +86,7 @@ namespace ClangPowerTools
       mOutputManager.AddMessage($"\n{OutputWindowConstants.kStart} {aCommandName}\n");
       foreach (var item in mItemsCollector.GetItems)
       {
-        var script = mScriptBuilder.GetScript(item, solutionPath);
+        var script = mCompileTidyScriptBuilder.GetScript(item, solutionPath);
         if (!mCommandsController.Running)
           break;
 

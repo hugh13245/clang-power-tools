@@ -2,9 +2,8 @@
 using System.ComponentModel.Design;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using EnvDTE;
-using System.IO;
 using ClangPowerTools.DialogPages;
+using ClangPowerTools.SilentFile;
 
 namespace ClangPowerTools
 {
@@ -68,13 +67,21 @@ namespace ClangPowerTools
         {
           AutomationUtil.SaveAllProjects(Package, DTEObj.Solution);
           CollectSelectedItems();
+
           mFileWatcher = new FileChangerWatcher();
-          using (var guard = new SilentFileChangerGuard())
+          var silentFileController = new SilentFileController();
+
+          using (var guard = silentFileController.GetSilentFileChangerGuard())
           {
             if (mTidyOptions.Fix)
             {
               WatchFiles();
-              SilentFiles(guard);
+
+              FilePathCollector fileCollector = new FilePathCollector();
+              var filesPath = fileCollector.Collect(mItemsCollector.GetItems);
+
+              silentFileController.SilentFiles(Package, guard, filesPath);
+              silentFileController.SilentOpenFiles(Package, guard, DTEObj);
             }
             RunScript(OutputWindowConstants.kTidyCodeCommand, mTidyOptions, mTidyChecks, mTidyCustomChecks);
           }
@@ -90,18 +97,6 @@ namespace ClangPowerTools
     #endregion
 
     #region Helpers
-
-    private void SilentFiles(SilentFileChangerGuard aGuard)
-    {
-      FilePathCollector fileCollector = new FilePathCollector();
-      fileCollector.Collect(mItemsCollector.GetItems);
-
-      // silent all open files
-      foreach (Document doc in DTEObj.Documents)
-        aGuard.Add(new SilentFileChanger(Package, Path.Combine(doc.Path, doc.Name), true));
-      //silent all selected files
-      aGuard.AddRange(Package, fileCollector.Files);
-    }
 
     private void WatchFiles()
     {
