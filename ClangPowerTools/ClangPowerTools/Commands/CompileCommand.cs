@@ -22,7 +22,7 @@ namespace ClangPowerTools
       if (ServiceProvider.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
       {
         var menuCommandID = new CommandID(CommandSet, Id);
-        var menuCommand = new OleMenuCommand(this.MenuItemCallback, menuCommandID);
+        var menuCommand = new OleMenuCommand(this.RunClangCompile, menuCommandID);
         menuCommand.BeforeQueryStatus += mCommandsController.QueryCommandHandler;
         menuCommand.Enabled = true;
         commandService.AddCommand(menuCommand);
@@ -40,7 +40,7 @@ namespace ClangPowerTools
     /// </summary>
     /// <param name="sender">Event sender.</param>
     /// <param name="e">Event args.</param>
-    private void MenuItemCallback(object sender, EventArgs e)
+    private void RunClangCompile(object sender, EventArgs e)
     {
       mCommandsController.Running = true;
       var task = System.Threading.Tasks.Task.Run(() =>
