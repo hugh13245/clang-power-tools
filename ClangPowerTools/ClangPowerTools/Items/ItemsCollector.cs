@@ -1,4 +1,5 @@
-﻿using EnvDTE;
+﻿using ClangPowerTools.DialogPages;
+using EnvDTE;
 using EnvDTE80;
 using System;
 using System.Collections.Generic;
@@ -18,14 +19,22 @@ namespace ClangPowerTools
         ".c++",
         ".cp",
       };
+    private string mClangFormatFilesExtension;
+    private string mSkipFiles;
     private List<IItem> mItems = new List<IItem>();
     private IServiceProvider mServiceProvider;
+    private bool mClangFormatMode = false;
 
     #endregion
 
     #region Constructor
 
-    public ItemsCollector(IServiceProvider aServiceProvider) => mServiceProvider = aServiceProvider;
+    public ItemsCollector(IServiceProvider aServiceProvider, string aClangFormatExtensions, string aSkipFiles)
+    {
+      mServiceProvider = aServiceProvider;
+      mClangFormatFilesExtension = aClangFormatExtensions;
+      mSkipFiles = aSkipFiles;
+    } 
 
     #endregion 
 
@@ -44,7 +53,7 @@ namespace ClangPowerTools
       // will be just one file selected
       if (null != aProjectItem)
       {
-        AddProjectItem(aProjectItem); 
+        AddProjectItem(aProjectItem);
         return;
       }
 
@@ -68,7 +77,16 @@ namespace ClangPowerTools
 
     public void AddProjectItem(ProjectItem aItem)
     {
-      if (kAcceptedExtensionTypes.Contains(Path.GetExtension(aItem.Name).ToLower()))
+      var fileExtension = Path.GetExtension(aItem.Name).ToLower();
+      if (null != mClangFormatFilesExtension)
+      {
+        if (null != mSkipFiles && mSkipFiles.Contains(aItem.Name))
+          return;
+        if (!mClangFormatFilesExtension.Contains(fileExtension))
+          return;
+        mItems.Add(new SelectedProjectItem(aItem));
+      }
+      else if (kAcceptedExtensionTypes.Contains(fileExtension))
         mItems.Add(new SelectedProjectItem(aItem));
     }
 
@@ -104,7 +122,7 @@ namespace ClangPowerTools
         AddProjectItem(aProjectItem);
       }
     }
-    
+
     #endregion
 
   }

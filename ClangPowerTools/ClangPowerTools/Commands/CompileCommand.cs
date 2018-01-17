@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.Shell;
 using System.ComponentModel.Design;
-using EnvDTE80;
 using Microsoft.VisualStudio.Shell.Interop;
 
 namespace ClangPowerTools
