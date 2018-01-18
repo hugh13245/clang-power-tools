@@ -17,6 +17,8 @@ namespace ClangPowerTools
     private TidyOptions mTidyOptions;
     private TidyChecks mTidyChecks;
     private TidyCustomChecks mTidyCustomChecks;
+    private ClangFormatPage mClangFormat;
+
     private FileChangerWatcher mFileWatcher;
     private FileOpener mFileOpener;
 
@@ -35,8 +37,8 @@ namespace ClangPowerTools
       mTidyOptions = (TidyOptions)Package.GetDialogPage(typeof(TidyOptions));
       mTidyChecks = (TidyChecks)Package.GetDialogPage(typeof(TidyChecks));
       mTidyCustomChecks = (TidyCustomChecks)Package.GetDialogPage(typeof(TidyCustomChecks));
+      mClangFormat = (ClangFormatPage)Package.GetDialogPage(typeof(ClangFormatPage));
 
-      mFileOpener = new FileOpener(DTEObj);
       if (ServiceProvider.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
       {
         var menuCommandID = new CommandID(CommandSet, Id);
@@ -69,6 +71,7 @@ namespace ClangPowerTools
           CollectSelectedItems();
 
           mFileWatcher = new FileChangerWatcher();
+          mFileOpener = new FileOpener(DTEObj);
           var silentFileController = new SilentFileController();
 
           using (var guard = silentFileController.GetSilentFileChangerGuard())
@@ -83,7 +86,7 @@ namespace ClangPowerTools
               silentFileController.SilentFiles(Package, guard, filesPath);
               silentFileController.SilentOpenFiles(Package, guard, DTEObj);
             }
-            RunScript(OutputWindowConstants.kTidyCodeCommand, mTidyOptions, mTidyChecks, mTidyCustomChecks);
+            RunScript(OutputWindowConstants.kTidyCodeCommand, mTidyOptions, mTidyChecks, mTidyCustomChecks, mClangFormat);
           }
         }
         catch (Exception exception)
@@ -91,7 +94,7 @@ namespace ClangPowerTools
           VsShellUtilities.ShowMessageBox(Package, exception.Message, "Error",
             OLEMSGICON.OLEMSGICON_CRITICAL, OLEMSGBUTTON.OLEMSGBUTTON_OK, OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
         }
-      }).ContinueWith(tsk => mCommandsController.AfterExecute()); ;
+      }).ContinueWith(tsk => mCommandsController.AfterExecute());
     }
 
     #endregion

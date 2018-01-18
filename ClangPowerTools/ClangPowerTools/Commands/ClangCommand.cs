@@ -72,11 +72,12 @@ namespace ClangPowerTools
       }
     }
 
-    protected void RunScript(string aCommandName, TidyOptions mTidyOptions = null, TidyChecks mTidyChecks = null, TidyCustomChecks mTidyCustomChecks = null)
+    protected void RunScript(string aCommandName, TidyOptions mTidyOptions = null, 
+      TidyChecks mTidyChecks = null, TidyCustomChecks mTidyCustomChecks = null, ClangFormatPage aClangFormat = null)
     {
       mCompileTidyScriptBuilder = new ClangCompileTidyScript();
       mCompileTidyScriptBuilder.ConstructParameters(mGeneralOptions, mTidyOptions, mTidyChecks,
-        mTidyCustomChecks, DTEObj, VsEdition, VsVersion);
+        mTidyCustomChecks, aClangFormat, DTEObj, VsEdition, VsVersion);
 
       string solutionPath = DTEObj.Solution.FullName;
 
