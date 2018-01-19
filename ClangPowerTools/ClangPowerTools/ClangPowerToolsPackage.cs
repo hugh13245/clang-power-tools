@@ -9,13 +9,10 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.CommandBars;
 using EnvDTE;
 using EnvDTE80;
-<<<<<<< HEAD
 using System.Reflection;
 using System.Xml;
 using System.IO;
 using System.Linq;
-=======
->>>>>>> added clang format functionality by pressing the button
 
 namespace ClangPowerTools
 {
@@ -71,6 +68,10 @@ namespace ClangPowerTools
     private SettingsCommand mSettingsCmd = null;
     private ClangFormatCommand clangFormatCmd = null;
 
+    private Events mDteEvents;
+    private DocumentEvents mDocumentEvents;
+    private DTE2 mDte;
+
     #endregion
 
     #endregion
@@ -100,18 +101,34 @@ namespace ClangPowerTools
     {
       base.Initialize();
 
-      SubscribeToOnShellPropertyChange();
-
-<<<<<<< HEAD
-=======
-      //mRunningDocTableEvents = new RunningDocTableEvents(this);
-      //mRunningDocTableEvents.BeforeSave += OnBeforeSave;
-
->>>>>>> specified acces level for commands and commented unimplemented fuctionality
       //Settings command is always visible
       mSettingsCmd = new SettingsCommand(this, CommandSet, CommandIds.kSettingsId);
+      mDte = GetService(typeof(DTE)) as DTE2;
 
+      SubscribeToOnShellPropertyChange();
       AdviseSolutionEvents();
+    }
+
+    #endregion
+
+    #region DocumentSaved event helpers
+
+    private void SubscribeToDocumentSaved()
+    {
+      mDteEvents = mDte.Events;
+      mDocumentEvents = mDteEvents.DocumentEvents;
+      mDocumentEvents.DocumentSaved += DocumentOnSave;
+    }
+
+    private void UnsubscribeFromDocumentSaved()
+    {
+      mDocumentEvents.DocumentSaved -= DocumentOnSave;
+    }
+
+    // Invoke ClangFormat command here
+    private void DocumentOnSave(Document aDocument)
+    {
+      mDte.Commands.Raise(CommandSet.ToString(), CommandIds.kClangFormat, new object(), new object());
     }
 
     #endregion
@@ -233,8 +250,9 @@ namespace ClangPowerTools
 
     public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
     {
-      //Load the rest of the commands when a solution is loaded
+      SubscribeToDocumentSaved();
 
+      //Load the rest of the commands when a solution is loaded
       if (null == mTidyCmd)
         mTidyCmd = new TidyCommand(this, CommandSet, CommandIds.kTidyId);
 
@@ -272,6 +290,7 @@ namespace ClangPowerTools
 
     public int OnBeforeCloseSolution(object pUnkReserved)
     {
+      UnsubscribeFromDocumentSaved();
       return VSConstants.S_OK;
     }
 
@@ -281,7 +300,6 @@ namespace ClangPowerTools
     }
 
     #endregion
-
 
     #region Private Methods
 
@@ -300,5 +318,6 @@ namespace ClangPowerTools
     }
 
     #endregion
+
   }
 }
