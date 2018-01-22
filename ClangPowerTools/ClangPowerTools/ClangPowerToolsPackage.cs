@@ -145,11 +145,15 @@ namespace ClangPowerTools
 
     private void DocumentOnSave(Document aDocument)
     {
-      var dispatcher = HwndSource.FromHwnd((IntPtr)mDte.MainWindow.HWnd).RootVisual.Dispatcher;
-      dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+      try
       {
-        mDte.Commands.Raise(CommandSet.ToString(), CommandIds.kClangFormat, new object(), new object());
-      }));
+        var dispatcher = HwndSource.FromHwnd((IntPtr)mDte.MainWindow.HWnd).RootVisual.Dispatcher;
+        dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+        {
+          mDte.Commands.Raise(CommandSet.ToString(), CommandIds.kClangFormat, new object(), new object());
+        }));
+      }
+      catch (Exception) { }
     }
 
     #endregion
