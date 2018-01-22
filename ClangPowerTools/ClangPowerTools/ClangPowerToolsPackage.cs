@@ -13,6 +13,8 @@ using System.Reflection;
 using System.Xml;
 using System.IO;
 using System.Linq;
+using System.Windows.Interop;
+using System.Windows.Threading;
 
 namespace ClangPowerTools
 {
@@ -67,10 +69,11 @@ namespace ClangPowerTools
     private StopClang mStopClang = null;
     private SettingsCommand mSettingsCmd = null;
     private ClangFormatCommand clangFormatCmd = null;
-
+    private ClangFormatPage mClangFormatPage;
     private Events mDteEvents;
     private DocumentEvents mDocumentEvents;
     private DTE2 mDte;
+    private int mDocumentSavedSubscriptionCounter = 0;
 
     #endregion
 
@@ -101,34 +104,52 @@ namespace ClangPowerTools
     {
       base.Initialize();
 
+      mDte = GetService(typeof(DTE)) as DTE2;
+      mDteEvents = mDte.Events;
+      mDocumentEvents = mDteEvents.DocumentEvents;
+
       //Settings command is always visible
       mSettingsCmd = new SettingsCommand(this, CommandSet, CommandIds.kSettingsId);
-      mDte = GetService(typeof(DTE)) as DTE2;
 
       SubscribeToOnShellPropertyChange();
       AdviseSolutionEvents();
+
+      mClangFormatPage = (ClangFormatPage)GetDialogPage(typeof(ClangFormatPage));
+    }
+
+    private void OptionPage_ClangFormatActivated(object aOptionPage, bool aEnabled)
+    {
+      SubscribeToDocumentSaved(aEnabled);
     }
 
     #endregion
 
     #region DocumentSaved event helpers
 
-    private void SubscribeToDocumentSaved()
+    private void SubscribeToDocumentSaved(bool aSubscribe)
     {
-      mDteEvents = mDte.Events;
-      mDocumentEvents = mDteEvents.DocumentEvents;
-      mDocumentEvents.DocumentSaved += DocumentOnSave;
+      if (aSubscribe)
+      {
+        mDocumentEvents.DocumentSaved += DocumentOnSave;
+        ++mDocumentSavedSubscriptionCounter;
+      }
+      else
+      {
+        while (mDocumentSavedSubscriptionCounter > 0)
+        {
+          mDocumentEvents.DocumentSaved -= DocumentOnSave;
+          --mDocumentSavedSubscriptionCounter;
+        }
+      }
     }
 
-    private void UnsubscribeFromDocumentSaved()
-    {
-      mDocumentEvents.DocumentSaved -= DocumentOnSave;
-    }
-
-    // Invoke ClangFormat command here
     private void DocumentOnSave(Document aDocument)
     {
-      mDte.Commands.Raise(CommandSet.ToString(), CommandIds.kClangFormat, new object(), new object());
+      var dispatcher = HwndSource.FromHwnd((IntPtr)mDte.MainWindow.HWnd).RootVisual.Dispatcher;
+      dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+      {
+        mDte.Commands.Raise(CommandSet.ToString(), CommandIds.kClangFormat, new object(), new object());
+      }));
     }
 
     #endregion
@@ -250,9 +271,9 @@ namespace ClangPowerTools
 
     public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
     {
-      SubscribeToDocumentSaved();
+      mClangFormatPage.ClangFormatActivated += OptionPage_ClangFormatActivated;
+      mClangFormatPage.LoadSettingsFromStorage();
 
-      //Load the rest of the commands when a solution is loaded
       if (null == mTidyCmd)
         mTidyCmd = new TidyCommand(this, CommandSet, CommandIds.kTidyId);
 
@@ -290,7 +311,9 @@ namespace ClangPowerTools
 
     public int OnBeforeCloseSolution(object pUnkReserved)
     {
-      UnsubscribeFromDocumentSaved();
+      SubscribeToDocumentSaved(false);
+
+      mClangFormatPage.ClangFormatActivated -= OptionPage_ClangFormatActivated;
       return VSConstants.S_OK;
     }
 
