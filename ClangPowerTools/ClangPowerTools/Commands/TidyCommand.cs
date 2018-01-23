@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using ClangPowerTools.DialogPages;
 using ClangPowerTools.SilentFile;
+using System.Linq;
 
 namespace ClangPowerTools
 {
@@ -81,7 +82,7 @@ namespace ClangPowerTools
               WatchFiles();
 
               FilePathCollector fileCollector = new FilePathCollector();
-              var filesPath = fileCollector.Collect(mItemsCollector.GetItems);
+              var filesPath = fileCollector.Collect(mItemsCollector.GetItems).ToList();
 
               silentFileController.SilentFiles(Package, guard, filesPath);
               silentFileController.SilentOpenFiles(Package, guard, DTEObj);

@@ -13,6 +13,7 @@ namespace ClangPowerTools
 
     protected static CommandsController mCommandsController = null;
     protected ItemsCollector mItemsCollector;
+    protected FilePathCollector mFileCollector;
     protected static RunningProcesses mRunningProcesses = new RunningProcesses();
     protected List<string> mDirectoriesPath = new List<string>();
     protected static OutputManager mOutputManager;
@@ -61,14 +62,14 @@ namespace ClangPowerTools
 
     #region Protected methods
 
-    protected void RunScript(ClangFormatPage aClangFormatPage)
+    protected void RunScript(ClangFormatPage aClangFormatPage, IEnumerable<string> aFilesPath)
     {
       mClangFormatScriptBuilder = new ClangFormatScript();
       mClangFormatScriptBuilder.ConstructParameters(aClangFormatPage);
 
-      foreach (var item in mItemsCollector.GetItems)
+      foreach (var path in aFilesPath)
       {
-        var script = mClangFormatScriptBuilder.GetScript(item.GetPath());
+        var script = mClangFormatScriptBuilder.GetScript(path);
         mPowerShell.Invoke(script);
       }
     }
@@ -126,6 +127,8 @@ namespace ClangPowerTools
         return;
       docs.SaveAll();
     }
+
+    protected Documents GetAllActiveDocuments => DTEObj.Documents;
 
     #endregion
 

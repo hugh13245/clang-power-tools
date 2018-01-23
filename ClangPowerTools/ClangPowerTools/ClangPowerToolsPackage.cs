@@ -68,7 +68,7 @@ namespace ClangPowerTools
     private TidyCommand mTidyCmd = null;
     private StopClang mStopClang = null;
     private SettingsCommand mSettingsCmd = null;
-    private ClangFormatCommand clangFormatCmd = null;
+    private ClangFormatCommand mClangFormatCmd = null;
     private ClangFormatPage mClangFormatPage;
     private Events mDteEvents;
     private DocumentEvents mDocumentEvents;
@@ -130,30 +130,17 @@ namespace ClangPowerTools
     {
       if (aSubscribe)
       {
-        mDocumentEvents.DocumentSaved += DocumentOnSave;
+        mDocumentEvents.DocumentSaved += mClangFormatCmd.DocumentOnSave;
         ++mDocumentSavedSubscriptionCounter;
       }
       else
       {
         while (mDocumentSavedSubscriptionCounter > 0)
         {
-          mDocumentEvents.DocumentSaved -= DocumentOnSave;
+          mDocumentEvents.DocumentSaved -= mClangFormatCmd.DocumentOnSave;
           --mDocumentSavedSubscriptionCounter;
         }
       }
-    }
-
-    private void DocumentOnSave(Document aDocument)
-    {
-      try
-      {
-        var dispatcher = HwndSource.FromHwnd((IntPtr)mDte.MainWindow.HWnd).RootVisual.Dispatcher;
-        dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
-        {
-          mDte.Commands.Raise(CommandSet.ToString(), CommandIds.kClangFormat, new object(), new object());
-        }));
-      }
-      catch (Exception) { }
     }
 
     #endregion
@@ -275,21 +262,19 @@ namespace ClangPowerTools
 
     public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
     {
-      mClangFormatPage.ClangFormatActivated += OptionPage_ClangFormatActivated;
-      mClangFormatPage.LoadSettingsFromStorage();
-
       if (null == mTidyCmd)
         mTidyCmd = new TidyCommand(this, CommandSet, CommandIds.kTidyId);
 
       if (null == mCompileCmd)
         mCompileCmd = new CompileCommand(this, CommandSet, CommandIds.kCompileId);
 
-      if (null == clangFormatCmd)
-        clangFormatCmd = new ClangFormatCommand(this, CommandSet, CommandIds.kClangFormat);
+      if (null == mClangFormatCmd)
+        mClangFormatCmd = new ClangFormatCommand(this, CommandSet, CommandIds.kClangFormat);
 
       if (null == mStopClang)
         mStopClang = new StopClang(this, CommandSet, CommandIds.kStopClang);
 
+<<<<<<< HEAD
       var generalOptions = (GeneralOptions)this.GetDialogPage(typeof(GeneralOptions));
       var currentVersion = GetPackageVersion();
 
@@ -304,9 +289,17 @@ namespace ClangPowerTools
         generalOptions.Version = currentVersion;
         generalOptions.SaveSettingsToStorage();
       }
+=======
+      mClangFormatPage.ClangFormatActivated += OptionPage_ClangFormatActivated;
+      mClangFormatPage.LoadSettingsFromStorage();
+
+      mDte.Events.BuildEvents.OnBuildBegin += mClangFormatCmd.OnBuildBegin;
+>>>>>>> added format on save for all active documents when build event occurs
 
       return VSConstants.S_OK;
     }
+
+
 
     public int OnQueryCloseSolution(object pUnkReserved, ref int pfCancel)
     {
