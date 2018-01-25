@@ -57,10 +57,10 @@ namespace ClangPowerTools
     public static readonly Guid CommandSet = new Guid("498fdff5-5217-4da9-88d2-edad44ba3874");
 
     private uint mEventSinkCookie;
-    //private RunningDocTableEvents mRunningDocTableEvents;
-
     private uint mHSolutionEvents = uint.MaxValue;
+
     private IVsSolution mSolution;
+    private RunningDocTableEvents mRunningDocTableEvents;
 
     #region Commands
 
@@ -69,14 +69,6 @@ namespace ClangPowerTools
     private StopClang mStopClang = null;
     private SettingsCommand mSettingsCmd = null;
     private ClangFormatCommand mClangFormatCmd = null;
-    private ClangFormatPage mClangFormatPage;
-    private Events mDteEvents;
-    private DocumentEvents mDocumentEvents;
-    private DTE2 mDte;
-    private int mDocumentSavedSubscriptionCounter = 0;
-    private DebuggerEvents mDebuggerEvents;
-    private CommandEvents mCommandEvents;
-
 
     #endregion
 
@@ -107,48 +99,16 @@ namespace ClangPowerTools
     {
       base.Initialize();
 
-
-
-
-      mDte = GetService(typeof(DTE)) as DTE2;
-      mDteEvents = mDte.Events;
-      mDocumentEvents = mDteEvents.DocumentEvents;
-      mDebuggerEvents = mDteEvents.DebuggerEvents;
-      mCommandEvents = mDteEvents.CommandEvents;
+      mRunningDocTableEvents = new RunningDocTableEvents(this);
 
       //Settings command is always visible
       mSettingsCmd = new SettingsCommand(this, CommandSet, CommandIds.kSettingsId);
 
+      //Help the toolbar to appear after the first installation
       SubscribeToOnShellPropertyChange();
+
+      // Get Pointer to IVsSolutionEvents
       AdviseSolutionEvents();
-
-      mClangFormatPage = (ClangFormatPage)GetDialogPage(typeof(ClangFormatPage));
-    }
-
-    private void OptionPage_ClangFormatActivated(object aOptionPage, bool aEnabled)
-    {
-      SubscribeToDocumentSaved(aEnabled);
-    }
-
-    #endregion
-
-    #region DocumentSaved event helpers
-
-    private void SubscribeToDocumentSaved(bool aSubscribe)
-    {
-      if (aSubscribe)
-      {
-        mDocumentEvents.DocumentSaved += mClangFormatCmd.DocumentOnSave;
-        ++mDocumentSavedSubscriptionCounter;
-      }
-      else
-      {
-        while (mDocumentSavedSubscriptionCounter > 0)
-        {
-          mDocumentEvents.DocumentSaved -= mClangFormatCmd.DocumentOnSave;
-          --mDocumentSavedSubscriptionCounter;
-        }
-      }
     }
 
     #endregion
@@ -280,6 +240,7 @@ namespace ClangPowerTools
       if (null == mStopClang)
         mStopClang = new StopClang(this, CommandSet, CommandIds.kStopClang);
 
+<<<<<<< HEAD
       var generalOptions = (GeneralOptions)this.GetDialogPage(typeof(GeneralOptions));
       var currentVersion = GetPackageVersion();
 
@@ -294,6 +255,9 @@ namespace ClangPowerTools
         generalOptions.Version = currentVersion;
         generalOptions.SaveSettingsToStorage();
       }
+=======
+      mRunningDocTableEvents.BeforeSave += mClangFormatCmd.OnBeforeSave;
+>>>>>>> get the document save event by using IVsRunningDocTableEvents3 improving the performance
 
       return VSConstants.S_OK;
     }
@@ -305,17 +269,7 @@ namespace ClangPowerTools
 
     public int OnBeforeCloseSolution(object aPUnkReserved)
     {
-      SubscribeToDocumentSaved(false);
-
-      mClangFormatPage.ClangFormatActivated -= OptionPage_ClangFormatActivated;
-
-
-      //mDte.Events.BuildEvents.OnBuildBegin -= mClangFormatCmd.OnBuildBegin;
-      //mDte.Events.DebuggerEvents.OnEnterRunMode -= mClangFormatCmd.DebuggerEventsOnEnterRunMode;
-
-
-      mCommandEvents.BeforeExecute -= mClangFormatCmd.CommandEventsBeforeExecute;
-
+      mRunningDocTableEvents.BeforeSave -= mClangFormatCmd.OnBeforeSave;
       return VSConstants.S_OK;
     }
 

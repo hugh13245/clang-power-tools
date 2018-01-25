@@ -6,11 +6,11 @@ using System.Linq;
 
 namespace ClangPowerTools
 {
-  public class RunningDocTableEvents : IVsRunningDocTableEvents3
+  class RunningDocTableEvents : IVsRunningDocTableEvents3
   {
     #region Members
 
-    private RunningDocumentTable mRunningDocTable;
+    private RunningDocumentTable mRunningDocumentTable;
     private DTE mDte;
 
     public delegate void OnBeforeSaveHander(object sender, Document document);
@@ -18,48 +18,71 @@ namespace ClangPowerTools
 
     #endregion
 
-    #region IVsRunningDocTableEvents3 implementstion
+    #region Constructor
 
-    public RunningDocTableEvents(Package aPackage)
+    public RunningDocTableEvents(Package package)
     {
-      mRunningDocTable = new RunningDocumentTable(aPackage);
-      mRunningDocTable.Advise(this);
+      mRunningDocumentTable = new RunningDocumentTable(package);
+      mRunningDocumentTable.Advise(this);
       mDte = (DTE)Package.GetGlobalService(typeof(DTE));
     }
 
-    public int OnAfterAttributeChange(uint aDocCookie, uint aGrfAttribs) => VSConstants.S_OK;
+    #endregion
 
-    public int OnAfterAttributeChangeEx(uint aDocCookie, uint aGrfAttribs, IVsHierarchy aPHierOld, uint aItemIdOld,
-      string aPszMkDocumentOld, IVsHierarchy aPHierNew, uint aItemIdNew, string aPszMkDocumentNew) => VSConstants.S_OK;
+    #region IVsRunningDocTableEvents3 implementation
 
-    public int OnAfterDocumentWindowHide(uint aDocCookie, IVsWindowFrame aPFrame) => VSConstants.S_OK;
-
-    public int OnAfterFirstDocumentLock(uint aDocCookie, uint aDwRDTLockType, uint aDwReadLocksRemaining,
-      uint aDwEditLocksRemaining) => VSConstants.S_OK;
-
-    public int OnAfterSave(uint aDocCookie) => VSConstants.S_OK;
-
-    public int OnBeforeDocumentWindowShow(uint aDocCookie, int aFFirstShow, IVsWindowFrame aPFrame) => VSConstants.S_OK;
-
-    public int OnBeforeLastDocumentUnlock(uint aDocCookie, uint aDwRDTLockType, uint aDwReadLocksRemaining, uint aDwEditLocksRemaining) => VSConstants.S_OK;
-
-    public int OnBeforeSave(uint aDocCookie)
+    public int OnAfterAttributeChange(uint docCookie, uint grfAttribs)
     {
-      if (null != BeforeSave)
-      {
-        var document = FindDocumentByCookie(aDocCookie);
-        if (null != document)
-          BeforeSave(this, FindDocumentByCookie(aDocCookie));
-      }
       return VSConstants.S_OK;
     }
 
-    private Document FindDocumentByCookie(uint aDocCookie)
+    public int OnAfterAttributeChangeEx(uint docCookie, uint grfAttribs, IVsHierarchy pHierOld, uint itemidOld, string pszMkDocumentOld, IVsHierarchy pHierNew, uint itemidNew, string pszMkDocumentNew)
     {
-      var documentInfo = mRunningDocTable.GetDocumentInfo(aDocCookie);
-      return mDte.Documents
-        .Cast<Document>()
-        .FirstOrDefault(doc => doc.FullName == documentInfo.Moniker);
+      return VSConstants.S_OK;
+    }
+
+    public int OnAfterDocumentWindowHide(uint docCookie, IVsWindowFrame pFrame)
+    {
+      return VSConstants.S_OK;
+    }
+
+    public int OnAfterFirstDocumentLock(uint docCookie, uint dwRDTLockType, uint dwReadLocksRemaining, uint dwEditLocksRemaining)
+    {
+      return VSConstants.S_OK;
+    }
+
+    public int OnAfterSave(uint docCookie)
+    {
+      return VSConstants.S_OK;
+    }
+
+    public int OnBeforeDocumentWindowShow(uint docCookie, int fFirstShow, IVsWindowFrame pFrame)
+    {
+      return VSConstants.S_OK;
+    }
+
+    public int OnBeforeLastDocumentUnlock(uint docCookie, uint dwRDTLockType, uint dwReadLocksRemaining, uint dwEditLocksRemaining)
+    {
+      return VSConstants.S_OK;
+    }
+
+    public int OnBeforeSave(uint docCookie)
+    {
+      if (null == BeforeSave)
+        return VSConstants.S_OK;
+
+      var document = FindDocumentByCookie(docCookie);
+      if (null == document)
+        return VSConstants.S_OK;
+
+      BeforeSave(this, FindDocumentByCookie(docCookie));
+      return VSConstants.S_OK;
+    }
+
+    private Document FindDocumentByCookie(uint docCookie)
+    {
+      var documentInfo = mRunningDocumentTable.GetDocumentInfo(docCookie);
+      return mDte.Documents.Cast<Document>().FirstOrDefault(doc => doc.FullName == documentInfo.Moniker);
     }
 
     #endregion
