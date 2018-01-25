@@ -6,15 +6,15 @@ using System.Linq;
 
 namespace ClangPowerTools
 {
-  class RunningDocTableEvents : IVsRunningDocTableEvents3
+  public class RunningDocTableEvents : IVsRunningDocTableEvents3
   {
     #region Members
 
     private RunningDocumentTable mRunningDocumentTable;
     private DTE mDte;
 
-    public delegate void OnBeforeSaveHander(object sender, Document document);
-    public event OnBeforeSaveHander BeforeSave;
+    public delegate void OnBeforeSaveHandler(object sender, Document document);
+    public event OnBeforeSaveHandler BeforeSave;
 
     #endregion
 
@@ -22,9 +22,9 @@ namespace ClangPowerTools
 
     public RunningDocTableEvents(Package package)
     {
+      mDte = (DTE)Package.GetGlobalService(typeof(DTE));
       mRunningDocumentTable = new RunningDocumentTable(package);
       mRunningDocumentTable.Advise(this);
-      mDte = (DTE)Package.GetGlobalService(typeof(DTE));
     }
 
     #endregion
