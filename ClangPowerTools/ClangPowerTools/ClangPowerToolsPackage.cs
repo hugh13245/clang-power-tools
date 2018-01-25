@@ -74,6 +74,9 @@ namespace ClangPowerTools
     private DocumentEvents mDocumentEvents;
     private DTE2 mDte;
     private int mDocumentSavedSubscriptionCounter = 0;
+    private DebuggerEvents mDebuggerEvents;
+    private CommandEvents mCommandEvents;
+
 
     #endregion
 
@@ -104,9 +107,14 @@ namespace ClangPowerTools
     {
       base.Initialize();
 
+
+
+
       mDte = GetService(typeof(DTE)) as DTE2;
       mDteEvents = mDte.Events;
       mDocumentEvents = mDteEvents.DocumentEvents;
+      mDebuggerEvents = mDteEvents.DebuggerEvents;
+      mCommandEvents = mDteEvents.CommandEvents;
 
       //Settings command is always visible
       mSettingsCmd = new SettingsCommand(this, CommandSet, CommandIds.kSettingsId);
@@ -166,9 +174,7 @@ namespace ClangPowerTools
 
     #region IVsShellPropertyEvents Implementation
 
-      
-	
-    public int OnShellPropertyChange(int propid, object propValue)
+    public int OnShellPropertyChange(int aPropid, object aPropValue)
     {
       //Check if the toolbar was already activated
       var tidyChecks = (TidyChecks)this.GetDialogPage(typeof(TidyChecks));
@@ -179,13 +185,13 @@ namespace ClangPowerTools
       }
 
       // Handle the event if zombie state changes from true to false
-      if ((int)__VSSPROPID.VSSPROPID_Zombie != propid)
+      if ((int)__VSSPROPID.VSSPROPID_Zombie != aPropid)
       {
         UnsubscribeFromOnShellPropertyChange();
         return VSConstants.S_OK;
       }
 
-      if ((bool)propValue)
+      if ((bool)aPropValue)
       {
         UnsubscribeFromOnShellPropertyChange();
         return VSConstants.S_OK;
@@ -235,32 +241,32 @@ namespace ClangPowerTools
       return VSConstants.S_OK;
     }
 
-    public int OnQueryCloseProject(IVsHierarchy pHierarchy, int fRemoving, ref int pfCancel)
+    public int OnQueryCloseProject(IVsHierarchy aPHierarchy, int aFRemoving, ref int aPfCancel)
     {
       return VSConstants.S_OK;
     }
 
-    public int OnBeforeCloseProject(IVsHierarchy pHierarchy, int fRemoved)
+    public int OnBeforeCloseProject(IVsHierarchy aPHierarchy, int aFRemoved)
     {
       return VSConstants.S_OK;
     }
 
-    public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy)
+    public int OnAfterLoadProject(IVsHierarchy aPStubHierarchy, IVsHierarchy aPRealHierarchy)
     {
       return VSConstants.S_OK;
     }
 
-    public int OnQueryUnloadProject(IVsHierarchy pRealHierarchy, ref int pfCancel)
+    public int OnQueryUnloadProject(IVsHierarchy aPRealHierarchy, ref int aPfCancel)
     {
       return VSConstants.S_OK;
     }
 
-    public int OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy)
+    public int OnBeforeUnloadProject(IVsHierarchy aPRealHierarchy, IVsHierarchy aPStubHierarchy)
     {
       return VSConstants.S_OK;
     }
 
-    public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
+    public int OnAfterOpenSolution(object aPUnkReserved, int aFNewSolution)
     {
       if (null == mTidyCmd)
         mTidyCmd = new TidyCommand(this, CommandSet, CommandIds.kTidyId);
@@ -274,7 +280,6 @@ namespace ClangPowerTools
       if (null == mStopClang)
         mStopClang = new StopClang(this, CommandSet, CommandIds.kStopClang);
 
-<<<<<<< HEAD
       var generalOptions = (GeneralOptions)this.GetDialogPage(typeof(GeneralOptions));
       var currentVersion = GetPackageVersion();
 
@@ -289,32 +294,32 @@ namespace ClangPowerTools
         generalOptions.Version = currentVersion;
         generalOptions.SaveSettingsToStorage();
       }
-=======
-      mClangFormatPage.ClangFormatActivated += OptionPage_ClangFormatActivated;
-      mClangFormatPage.LoadSettingsFromStorage();
-
-      mDte.Events.BuildEvents.OnBuildBegin += mClangFormatCmd.OnBuildBegin;
->>>>>>> added format on save for all active documents when build event occurs
 
       return VSConstants.S_OK;
     }
 
-
-
-    public int OnQueryCloseSolution(object pUnkReserved, ref int pfCancel)
+    public int OnQueryCloseSolution(object aPUnkReserved, ref int aPfCancel)
     {
       return VSConstants.S_OK;
     }
 
-    public int OnBeforeCloseSolution(object pUnkReserved)
+    public int OnBeforeCloseSolution(object aPUnkReserved)
     {
       SubscribeToDocumentSaved(false);
 
       mClangFormatPage.ClangFormatActivated -= OptionPage_ClangFormatActivated;
+
+
+      //mDte.Events.BuildEvents.OnBuildBegin -= mClangFormatCmd.OnBuildBegin;
+      //mDte.Events.DebuggerEvents.OnEnterRunMode -= mClangFormatCmd.DebuggerEventsOnEnterRunMode;
+
+
+      mCommandEvents.BeforeExecute -= mClangFormatCmd.CommandEventsBeforeExecute;
+
       return VSConstants.S_OK;
     }
 
-    public int OnAfterCloseSolution(object pUnkReserved)
+    public int OnAfterCloseSolution(object aPUnkReserved)
     {
       return VSConstants.S_OK;
     }
