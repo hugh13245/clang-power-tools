@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using ClangPowerTools.DialogPages;
 using ClangPowerTools.Script;
-using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 
 namespace ClangPowerTools
@@ -119,16 +118,6 @@ namespace ClangPowerTools
       mItemsCollector.CollectSelectedFiles(DTEObj, ActiveWindowProperties.GetProjectItemOfActiveWindow(DTEObj));
       return mItemsCollector.GetItems;
     }
-
-    protected void SaveActiveDocuments()
-    {
-      Documents docs = DTEObj.Documents;
-      if (null == docs)
-        return;
-      docs.SaveAll();
-    }
-
-    protected Documents GetAllActiveDocuments => DTEObj.Documents;
 
     #endregion
 

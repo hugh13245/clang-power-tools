@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using ClangPowerTools.DialogPages;
 using ClangPowerTools.SilentFile;
 using System.Linq;
+using EnvDTE;
 
 namespace ClangPowerTools
 {
