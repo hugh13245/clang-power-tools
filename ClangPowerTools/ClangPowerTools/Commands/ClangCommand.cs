@@ -112,9 +112,9 @@ namespace ClangPowerTools
         mErrorsManager.AddErrors(mOutputManager.Errors);
     }
 
-    protected List<IItem> CollectSelectedItems(string aClangFormatExtensions = null, string aSkipFiles = null)
+    protected List<IItem> CollectSelectedItems()
     {
-      mItemsCollector = new ItemsCollector(Package, aClangFormatExtensions, aSkipFiles);
+      mItemsCollector = new ItemsCollector(Package);
       mItemsCollector.CollectSelectedFiles(DTEObj, ActiveWindowProperties.GetProjectItemOfActiveWindow(DTEObj));
       return mItemsCollector.GetItems;
     }
