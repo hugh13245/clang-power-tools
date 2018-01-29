@@ -240,7 +240,6 @@ namespace ClangPowerTools
       if (null == mStopClang)
         mStopClang = new StopClang(this, CommandSet, CommandIds.kStopClang);
 
-<<<<<<< HEAD
       var generalOptions = (GeneralOptions)this.GetDialogPage(typeof(GeneralOptions));
       var currentVersion = GetPackageVersion();
 
@@ -255,9 +254,7 @@ namespace ClangPowerTools
         generalOptions.Version = currentVersion;
         generalOptions.SaveSettingsToStorage();
       }
-=======
       mRunningDocTableEvents.BeforeSave += mClangFormatCmd.OnBeforeSave;
->>>>>>> get the document save event by using IVsRunningDocTableEvents3 improving the performance
 
       return VSConstants.S_OK;
     }

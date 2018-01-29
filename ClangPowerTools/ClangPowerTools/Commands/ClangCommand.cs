@@ -112,7 +112,7 @@ namespace ClangPowerTools
         mErrorsManager.AddErrors(mOutputManager.Errors);
     }
 
-    protected List<IItem> CollectSelectedItems()
+    protected IEnumerable<IItem> CollectSelectedItems()
     {
       mItemsCollector = new ItemsCollector(Package);
       mItemsCollector.CollectSelectedFiles(DTEObj, ActiveWindowProperties.GetProjectItemOfActiveWindow(DTEObj));
